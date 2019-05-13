@@ -12,11 +12,21 @@ local lines = {}
 
 local speed = 10
 
-local cam = {
+local angle = 0
+
+local camPos = {
     x = 0,
     y = 0,
     z = -5,
 }
+
+local camRot = {
+    0,
+    0,
+}
+
+love.mouse.setRelativeMode(true)
+local dx, dy = 0, 0 -- to handle rotation
 
 local isQ = false
 local isE = false
@@ -89,12 +99,17 @@ end
 
 function love.update(dt)
 
+    mouseRotationUpdate()
+
     -- -- circles at verticles
     -- circleCoords = {}
     -- for i, v in ipairs(vertices) do
-    --     local x = vertices[i][1] - cam.x
-    --     local y = vertices[i][2] - cam.y
-    --     local z = vertices[i][3] - cam.z
+    --     local x = vertices[i][1] - camPos.x
+    --     local y = vertices[i][2] - camPos.y
+    --     local z = vertices[i][3] - camPos.z
+
+    --     x, z = rotate2d(x, z, camRot[2])
+    --     y, z = rotate2d(y, z, camRot[1])
 
     --     local f = WINDOW_HEIGHT / 2 / z
 
@@ -106,6 +121,7 @@ function love.update(dt)
     -- end
 
     lines = {}
+
     for _, edge in ipairs(edges) do -- loops 12 times because there are 12 edges in a cube
 
         local p1 = vertices[edge[1]]
@@ -115,11 +131,12 @@ function love.update(dt)
 
         for _, vertice in ipairs({p1, p2}) do -- loops 2 times, because line is described by 2 points
 
-            local x = vertice[1] - cam.x
-            local y = vertice[2] - cam.y
-            local z = vertice[3] - cam.z
+            local x = vertice[1] - camPos.x
+            local y = vertice[2] - camPos.y
+            local z = vertice[3] - camPos.z
 
-            -- z = z + 5
+            x, z = rotate2d(x, z, camRot[2])
+            y, z = rotate2d(y, z, camRot[1])
 
             local f = WINDOW_HEIGHT / 2 / z
 
@@ -135,29 +152,31 @@ function love.update(dt)
 
 
     if isQ then
-        cam.y = cam.y - speed * dt
+        camPos.y = camPos.y - speed * dt
     end
 
     if isE then
-        cam.y = cam.y + speed * dt
+        camPos.y = camPos.y + speed * dt
     end
 
     if isA then
-        cam.x = cam.x - speed * dt
+        camPos.x = camPos.x - speed * dt
     end
 
     if isD then
-        cam.x = cam.x + speed * dt
+        camPos.x = camPos.x + speed * dt
     end
 
     if isW then
-        cam.z = cam.z + speed * dt
+        camPos.z = camPos.z + speed * dt
     end
 
     if isS then
-        cam.z = cam.z - speed * dt
+        camPos.z = camPos.z - speed * dt
     end
 end
+
+
 
 function love.draw()
 
@@ -173,4 +192,32 @@ function love.draw()
 
     -- print FPS number
     love.graphics.printf(love.timer.getFPS( ), 0, 0, WINDOW_WIDTH, "left")
+end
+
+-- rotation algorithm
+function rotate2d(x, y, angle)
+    local s = math.sin(angle)
+    local c = math.cos(angle)
+    return x * c - y * s, y * c + x * s
+end
+
+function mouseRotationUpdate()
+
+    -- DX and DY are representing the change in
+    -- position of mouse coords during one game tick
+    function love.mousemoved(X,Y,DX,DY)
+        dx, dy = DX, DY
+    end
+
+    -- values are divided to control the sensitivity of
+    -- mouse input, we are basically moving from pixels
+    -- to radians, note that to complete a full turn 
+    -- you need to rotate by 2Pi ~ 6.28 radians and mouse
+    -- is easily moving by tens and hundreds of pixels so
+    -- that's why we are dividing these values
+    dx = dx / 50
+    dy = dy / 50
+    
+    camRot[1] = camRot[1] + dy
+    camRot[2] = camRot[2] + dx
 end
