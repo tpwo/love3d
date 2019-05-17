@@ -12,8 +12,6 @@ local lines = {}
 
 local speed = 10
 
-local angle = 0
-
 local camPos = {
     x = 0,
     y = 0,
@@ -150,6 +148,29 @@ function love.update(dt)
         table.insert(lines, points)
     end
 
+    
+    local x = speed * dt * math.sin(camRot[2])
+    local y = speed * dt * math.cos(camRot[2])
+
+    if isA then
+        camPos.x = camPos.x - y
+        camPos.z = camPos.z + x
+    end
+
+    if isD then
+        camPos.x = camPos.x + y
+        camPos.z = camPos.z - x
+    end
+
+    if isW then
+        camPos.x = camPos.x + x
+        camPos.z = camPos.z + y
+    end
+
+    if isS then
+        camPos.x = camPos.x - x
+        camPos.z = camPos.z - y
+    end
 
     if isQ then
         camPos.y = camPos.y - speed * dt
@@ -157,22 +178,6 @@ function love.update(dt)
 
     if isE then
         camPos.y = camPos.y + speed * dt
-    end
-
-    if isA then
-        camPos.x = camPos.x - speed * dt
-    end
-
-    if isD then
-        camPos.x = camPos.x + speed * dt
-    end
-
-    if isW then
-        camPos.z = camPos.z + speed * dt
-    end
-
-    if isS then
-        camPos.z = camPos.z - speed * dt
     end
 end
 
